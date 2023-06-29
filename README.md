@@ -6,6 +6,6 @@ This code utilizes a face detection and an emotion recognition model to analyze 
 
 ----------------------------------------------
 
-The concept of the Emotion-recognition-colab tool originated at the Academy of Performing Arts in Prague as part of the project "Generative neural networks and human imagination: participatory approaches to synthetic media production" with the support of the Institutional Endowment for the Longterm Conceptual Development of the Research Institutes, as provided by the Ministry of Education, Youth and Sports of the Czech Republic in the year 2023.
+The concept of the multi-emo2video tool originated at the Academy of Performing Arts in Prague as part of the project "Generative neural networks and human imagination: participatory approaches to synthetic media production" with the support of the Institutional Endowment for the Longterm Conceptual Development of the Research Institutes, as provided by the Ministry of Education, Youth and Sports of the Czech Republic in the year 2023.
 
 Development: Scy Heidekamp - https://scyheidekamp.nl/ Concept & research: Lenka Hamosova - https://hamosova.com/
