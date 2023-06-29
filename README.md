@@ -1,4 +1,4 @@
-# multi-emo2video
+# multi-emo2videoFX
 
 [![multi-emo2videfx](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/1RF1U3JN_QFikYXkzh1CtjCUuk4xHpO8d?usp=sharing)
 
