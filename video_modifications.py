@@ -1,20 +1,15 @@
 import cv2
 import numpy as np
 
-def blend_multiply(img1, img2):
-    # Ensure the images are the same size
-    assert img1.shape == img2.shape, "Both images must have the same shape."
-    # Perform the multiply blend
-    return (img1 * img2 / 255).astype(np.uint8)
-
-
 def add_noise(img, intensity):
-    # Generate a noise image
-    noise = np.random.normal(0, intensity, img.shape)
-    noise_img = (noise - np.min(noise)) / (np.max(noise) - np.min(noise))  # Normalize to range 0-1
-    noise_img = (noise_img * 255).astype(np.uint8)  # Scale to range 0-255
-    # Blend the noise with the original image using the multiply blending mode
-    img_noise = blend_multiply(img, noise_img)
+    # Generate noise
+    noise = np.random.normal(0, 1, img.shape).astype(np.float32)
+    # Scale the noise by intensity/10
+    noise = noise * (intensity*2)
+    # Add the noise to the image
+    img_noise = img + noise
+    # Clip the values to be between 0 and 255
+    img_noise = np.clip(img_noise, 0, 255).astype(np.uint8)
     return img_noise
 
 def change_brightness(img, value):
@@ -28,9 +23,16 @@ def change_brightness(img, value):
     img = cv2.cvtColor(final_hsv, cv2.COLOR_HSV2BGR)
     return img
 
-def grayscale_image(img):
-    grayscale = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-    return grayscale
+def desaturate_and_blur(img, intensity, factor=2):
+    # Convert to HSV
+    hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
+    # Decrease saturation, ensuring it doesn't go below 0
+    hsv[:,:,1] = np.clip(hsv[:,:,1]*(1.0 - (intensity/(factor*50))), 0, 255)
+    # Convert back to BGR
+    desaturated_bgr = cv2.cvtColor(hsv, cv2.COLOR_HSV2BGR)
+    # Blur the image
+    blurred = blur_image(desaturated_bgr, intensity/factor)
+    return blurred
 
 def blur_image(img, intensity):
     # Ensure intensity is positive
@@ -47,29 +49,68 @@ def blur_image(img, intensity):
     blurred = cv2.GaussianBlur(img, kernel_size, 0)
     return blurred
 
-def rotate_image(img, angle=90):
+def rotate_image(img, angle, factor=3):
     (h, w) = img.shape[:2]
-    (cx, cy) = (w // 2, h // 2)
+    center = (w / 2, h / 2)
 
-    M = cv2.getRotationMatrix2D((cx, cy), -angle, 1.0)
-    cos = np.abs(M[0, 0])
-    sin = np.abs(M[0, 1])
+    # Modify angle based on factor
+    angle = angle * factor
 
-    nw = int((h * sin) + (w * cos))
-    nh = int((h * cos) + (w * sin))
+    # Perform the rotation
+    M = cv2.getRotationMatrix2D(center, -angle, 1.0)
+    rotated = cv2.warpAffine(img, M, (w, h))
 
-    M[0, 2] += (nw / 2) - cx
-    M[1, 2] += (nh / 2) - cy
-
-    rotated = cv2.warpAffine(img, M, (nw, nh))
     return rotated
 
-def edge_detection(img, low_threshold=100, high_threshold=200):
-    # Apply Canny edge detection
-    edges = cv2.Canny(img, low_threshold, high_threshold)
-    # Dilate the edges to make them more pronounced
-    dilated_edges = cv2.dilate(edges, None)
-    return dilated_edges
+def edge_detection(image, sigma=0.33):
+    # compute the median of the single channel pixel intensities
+    v = np.median(image)
+    # apply automatic Canny edge detection using the computed median
+    lower = int(max(0, (1.0 - sigma) * v))
+    upper = int(min(255, (1.0 + sigma) * v))
+    edged = cv2.Canny(image, lower, upper)
+    # return the edged image
+    return edged
 
-def invert_colors(img):
+def invert_colors(img, emotion_intensity):
+    emotion_intensity = emotion_intensity
     return cv2.bitwise_not(img)
+
+def threshold_image(img, threshold):
+    # Convert the image to grayscale
+    gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+    # Apply thresholding
+    ret, thresh = cv2.threshold(gray, (threshold*3), 255, cv2.THRESH_BINARY)
+    # Convert single channel image back to 3 channels.
+    thresh_colored = cv2.cvtColor(thresh, cv2.COLOR_GRAY2BGR)
+    return thresh_colored
+
+
+def add_text_overlay(img, text, position=(50, 50), font_scale=1, color=(255, 255, 255), thickness=2):
+    font = cv2.FONT_HERSHEY_SIMPLEX
+    cv2.putText(img, text, position, font, font_scale, color, thickness, cv2.LINE_AA)
+    return img
+
+def translate_image(img, x_shift, y_shift):
+    (height, width) = img.shape[:2]
+    translation_matrix = np.float32([[1, 0, x_shift], [0, 1, y_shift]])
+    return cv2.warpAffine(img, translation_matrix, (width, height))
+
+def adjust_contrast(img, factor):
+    # Ensure factor is between 0 and 1 to decrease contrast
+    factor = max(0, min(1, factor*2))
+    return cv2.convertScaleAbs(img, alpha=factor, beta=0)
+
+
+def increase_saturation(img, increase_factor):
+    # Convert BGR image to HSV
+    hsv_img = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
+    
+    # Increase saturation, make sure it doesn't exceed 255
+    hsv_img[:,:,1] = np.clip(hsv_img[:,:,1] * (increase_factor/2), 0, 255)
+
+    # Convert back to BGR
+    saturated_img = cv2.cvtColor(hsv_img, cv2.COLOR_HSV2BGR)
+
+    return saturated_img
+
