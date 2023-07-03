@@ -92,6 +92,7 @@ class ModifyVideo:
 
         fourcc = cv2.VideoWriter_fourcc(*'mp4v')
         out = None
+        print(f"Processing video...")
 
         while cap_emotion.isOpened() and cap_effect.isOpened():
             ret_emotion, frame_emotion = cap_emotion.read()
