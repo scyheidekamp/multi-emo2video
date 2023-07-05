@@ -111,17 +111,17 @@ class ModifyVideo:
                 frames = []
 
             if dominant_emotion == 'happy':
-                frame_effect = vm.threshold_image(frame_effect, emotion_intensity)
-            elif dominant_emotion == 'sad':
-                frame_effect = vm.edge_detection(frame_effect, emotion_intensity)
-            elif dominant_emotion == 'angry':
-                frame_effect = vm.desaturate_and_blur(frame_effect, emotion_intensity)
+                frame_effect = vm.increase_saturation(frame_effect, emotion_intensity)
             elif dominant_emotion == 'neutral':
-                frame_effect = vm.invert_colors(frame_effect, emotion_intensity)
-            elif dominant_emotion == 'surprised':
-                frame_effect = vm.rotate_image(frame_effect, emotion_intensity)
+                frame_effect = vm.change_brightness(frame_effect, emotion_intensity)
+            elif dominant_emotion == 'sad':
+                frame_effect = vm.desaturate_and_blur(frame_effect, emotion_intensity)
             elif dominant_emotion == 'scared':
                 frame_effect = vm.add_noise(frame_effect, emotion_intensity)
+            elif dominant_emotion == 'surprised':
+                frame_effect = vm.rotate_image(frame_effect, emotion_intensity)
+            elif dominant_emotion == 'angry':
+                frame_effect = vm.threshold_image(frame_effect, emotion_intensity)
             elif dominant_emotion == 'disgust':
                 frame_effect = vm.invert_colors(frame_effect)
 
